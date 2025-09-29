@@ -2,87 +2,112 @@
 <html lang="it">
 <head>
   <meta charset="utf-8">
-  <title>La Linea — Readme</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>La Linea — Readme</title>
   <style>
-    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;
-         background:#111;color:#eee;margin:20px;padding:0;max-width:800px}
-    h1,h2{color:#fff}
-    a{color:#4da3ff;text-decoration:none;font-weight:600}
-    a:hover{text-decoration:underline}
-    .center{text-align:center;margin:20px 0}
-    button{padding:12px 20px;font-size:16px;border:none;
-           border-radius:8px;background:#4da3ff;color:#fff;
-           cursor:pointer}
-    button:hover{background:#297bcd}
-    img{max-width:100%;border-radius:12px;margin:10px 0}
-    .kbd{font-family:ui-monospace,Menlo,Consolas,monospace;
-         border:1px solid #555;border-radius:4px;padding:2px 6px;color:#ddd}
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:#000;color:#fff;margin:0;padding:20px;line-height:1.6}
+    h1{font-size:22px;margin-bottom:10px}
+    select{margin:10px 0;padding:6px 10px;border-radius:8px;border:1px solid #444;background:#111;color:#fff}
+    .content{margin-top:20px}
+    .btnPlay{display:inline-block;margin-top:20px;padding:12px 24px;background:#fff;color:#000;font-weight:bold;border-radius:12px;text-decoration:none}
+    .btnPlay:hover{background:#ddd}
   </style>
 </head>
 <body>
-  <div class="center">
-    <img src="image.png" alt="Anteprima del gioco">
-    <h1>🎬 La Linea — Gioco Tributo (B/N)</h1>
-    <div style="margin-top:16px">
-      <a href="index.html"><button>▶ PLAY</button></a>
-    </div>
-  </div>
+  <h1>📖 La Linea — Readme</h1>
 
-  <h2>✨ Caratteristiche</h2>
-  <ul>
-    <li>Stile minimalista in bianco/nero</li>
-    <li>Personaggio animato (bocca, braccia)</li>
-    <li>Bonus in aria, ponti disegnati dalla mano</li>
-    <li>Ostacoli: fiumi, piante, lupi da evitare</li>
-    <li>3 vite, livelli progressivi e difficoltà crescente</li>
-    <li>Funziona su laptop, tablet e smartphone</li>
-    <li>Installabile offline come PWA</li>
-  </ul>
+  <label for="lang">🌍 Lingua / Language:</label>
+  <select id="lang">
+    <option value="it">Italiano</option>
+    <option value="en">English</option>
+    <option value="fr">Français</option>
+    <option value="es">Español</option>
+    <option value="de">Deutsch</option>
+  </select>
 
-  <h2>🎮 Comandi (IT)</h2>
-  <p><strong>Laptop / PC (tastiera)</strong></p>
-  <ul>
-    <li><kbd>←</kbd> / <kbd>→</kbd> → muovi a sinistra / destra</li>
-    <li><kbd>Space</kbd> → salta</li>
-    <li><kbd>↓</kbd> → fermati</li>
-    <li><kbd>P</kbd> → pausa / riprendi</li>
-    <li><kbd>R</kbd> → restart</li>
-  </ul>
-  <p><strong>Smartphone / Tablet (touch / pulsanti virtuali)</strong></p>
-  <ul>
-    <li>Tocca il canvas o il pulsante “SALTA” per saltare</li>
-    <li>Usa i pulsanti <strong>←</strong> e <strong>→</strong> sullo schermo per muoverti</li>
-    <li>I pulsanti virtuali appaiono automaticamente su dispositivo touch</li>
-    <li>La scritta “spazio” è visibile solo su desktop (nascosta su mobile)</li>
-  </ul>
+  <div class="content" id="content"></div>
 
-  <h2>🎮 Controls (EN)</h2>
-  <p><strong>Laptop / PC (keyboard)</strong></p>
-  <ul>
-    <li><kbd>←</kbd> / <kbd>→</kbd> → move left / right</li>
-    <li><kbd>Space</kbd> → jump</li>
-    <li><kbd>↓</kbd> → stop</li>
-    <li><kbd>P</kbd> → pause / resume</li>
-    <li><kbd>R</kbd> → restart</li>
-  </ul>
-  <p><strong>Smartphone / Tablet (touch / on-screen buttons)</strong></p>
-  <ul>
-    <li>Tap the canvas or the “JUMP” button to jump</li>
-    <li>Use the on-screen <strong>←</strong> and <strong>→</strong> buttons to move</li>
-    <li>Virtual buttons appear automatically on mobile devices</li>
-    <li>The “space” label is shown only on desktop (hidden on mobile)</li>
-  </ul>
+  <a class="btnPlay" href="index.html">▶️ PLAY</a>
 
-  <h2>📱 Installazione</h2>
-  <ol>
-    <li>Apri il link del gioco nel browser.</li>
-    <li>Aggiungilo alla Home / Installa come app.</li>
-    <li>Gioca offline, full-screen.</li>
-  </ol>
+  <script>
+    const texts = {
+      it: `
+        <h2>Come si gioca</h2>
+        <ul>
+          <li>⬅️ ➡️ Frecce sinistra/destra: muovi il personaggio</li>
+          <li>␣ Spazio: salta</li>
+          <li>⏸ P: pausa</li>
+          <li>🔄 R: ricomincia</li>
+        </ul>
+        <p>Su iPhone e Android compaiono pulsanti tattili (⬅️ SALTA ➡️) per giocare senza tastiera.</p>
+        <h2>Crediti</h2>
+        <p>Fan-game tributo all’idea di Osvaldo Cavandoli.  
+        Sviluppo didattico open source © 2025 pezzaliAPP.</p>
+      `,
+      en: `
+        <h2>How to Play</h2>
+        <ul>
+          <li>⬅️ ➡️ Arrow keys: move the character</li>
+          <li>␣ Space: jump</li>
+          <li>⏸ P: pause</li>
+          <li>🔄 R: restart</li>
+        </ul>
+        <p>On iPhone and Android, on-screen touch buttons (⬅️ JUMP ➡️) appear to play without a keyboard.</p>
+        <h2>Credits</h2>
+        <p>Fan-game tribute to Osvaldo Cavandoli’s idea.  
+        Educational open source project © 2025 pezzaliAPP.</p>
+      `,
+      fr: `
+        <h2>Comment jouer</h2>
+        <ul>
+          <li>⬅️ ➡️ Flèches gauche/droite : déplacer le personnage</li>
+          <li>␣ Espace : sauter</li>
+          <li>⏸ P : pause</li>
+          <li>🔄 R : recommencer</li>
+        </ul>
+        <p>Sur iPhone et Android, des boutons tactiles (⬅️ SAUT ➡️) apparaissent pour jouer sans clavier.</p>
+        <h2>Crédits</h2>
+        <p>Jeu hommage à l’idée d’Osvaldo Cavandoli.  
+        Projet éducatif open source © 2025 pezzaliAPP.</p>
+      `,
+      es: `
+        <h2>Cómo jugar</h2>
+        <ul>
+          <li>⬅️ ➡️ Flechas izquierda/derecha: mover el personaje</li>
+          <li>␣ Espacio: saltar</li>
+          <li>⏸ P: pausa</li>
+          <li>🔄 R: reiniciar</li>
+        </ul>
+        <p>En iPhone y Android aparecen botones táctiles (⬅️ SALTA ➡️) para jugar sin teclado.</p>
+        <h2>Créditos</h2>
+        <p>Juego tributo a la idea de Osvaldo Cavandoli.  
+        Proyecto educativo open source © 2025 pezzaliAPP.</p>
+      `,
+      de: `
+        <h2>Spielanleitung</h2>
+        <ul>
+          <li>⬅️ ➡️ Pfeiltasten links/rechts: Figur bewegen</li>
+          <li>␣ Leertaste: springen</li>
+          <li>⏸ P: Pause</li>
+          <li>🔄 R: Neustart</li>
+        </ul>
+        <p>Auf iPhone und Android erscheinen Touch-Buttons (⬅️ SPRUNG ➡️), um ohne Tastatur zu spielen.</p>
+        <h2>Credits</h2>
+        <p>Fan-Spiel als Hommage an die Idee von Osvaldo Cavandoli.  
+        Open-Source Bildungsprojekt © 2025 pezzaliAPP.</p>
+      `
+    };
 
-  <p style="margin-top:30px;color:#888">
-    © 2025 — <a href="https://www.alessandropezzali.it">pezzaliAPP</a> — MIT License
-  </p>
+    const select = document.getElementById('lang');
+    const content = document.getElementById('content');
+
+    function updateLang(){
+      const lang = select.value;
+      content.innerHTML = texts[lang];
+    }
+
+    select.addEventListener('change', updateLang);
+    updateLang();
+  </script>
 </body>
 </html>
