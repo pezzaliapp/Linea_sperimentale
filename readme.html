@@ -2,83 +2,87 @@
 <html lang="it">
 <head>
   <meta charset="utf-8">
+  <title>La Linea — Readme</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>README — La Linea (Tributo B/N)</title>
   <style>
-    :root{--bg:#0b0b0b;--card:#121212;--text:#eaeaea;--muted:#a8a8a8;--border:#242424}
-    html,body{margin:0;background:var(--bg);color:var(--text);font:16px/1.55 system-ui,-apple-system,Segoe UI,Roboto,Arial}
-    .wrap{max-width:920px;margin:auto;padding:24px}
-    h1,h2{line-height:1.2;margin:0 0 .6em}
-    h1{font-size:28px}
-    h2{font-size:20px;margin-top:1.4em}
-    p{margin:.6em 0}
-    code,kbd{font-family:ui-monospace,Menlo,Consolas,monospace;background:#1b1b1b;border:1px solid var(--border);border-radius:6px;padding:.08em .35em}
-    .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin:14px 0}
-    ul{margin:.4em 0 .8em 1.2em}
-    .mono{font-family:ui-monospace,Menlo,Consolas,monospace}
-    .footer{color:var(--muted);font-size:14px;margin-top:18px}
-    hr{border:0;border-top:1px solid var(--border);margin:18px 0}
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;
+         background:#111;color:#eee;margin:20px;padding:0;max-width:800px}
+    h1,h2{color:#fff}
+    a{color:#4da3ff;text-decoration:none;font-weight:600}
+    a:hover{text-decoration:underline}
+    .center{text-align:center;margin:20px 0}
+    button{padding:12px 20px;font-size:16px;border:none;
+           border-radius:8px;background:#4da3ff;color:#fff;
+           cursor:pointer}
+    button:hover{background:#297bcd}
+    img{max-width:100%;border-radius:12px;margin:10px 0}
+    .kbd{font-family:ui-monospace,Menlo,Consolas,monospace;
+         border:1px solid #555;border-radius:4px;padding:2px 6px;color:#ddd}
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <h1>La Linea — Gioco Tributo (B/N)</h1>
-    <p><strong>Fan-game didattico, mobile-first</strong>, ispirato al linguaggio grafico di La Linea. La baseline scorre, compaiono scalini/buchi/gobbe; tu aiuti il personaggio a <strong>saltare</strong>.</p>
-    <p class="card">Omaggio stilistico all’idea di Osvaldo Cavandoli. Progetto non ufficiale e senza scopo di lucro.</p>
-
-    <h2>Demo locale</h2>
-    <p>Apri <code>index.html</code> in un browser moderno.</p>
-
-    <h2>Comandi</h2>
-    <ul>
-      <li><strong>Salto:</strong> tap sull’area “Tocca qui” oppure tasto <kbd>Space</kbd></li>
-      <li><strong>Pausa/Riprendi:</strong> bottone “Pausa” o tasto <kbd>P</kbd></li>
-      <li><strong>Restart:</strong> bottone “Restart” o tasto <kbd>R</kbd></li>
-    </ul>
-
-    <h2>Struttura</h2>
-    <div class="card mono">
-      / (cartella del progetto)<br>
-      ├─ index.html<br>
-      ├─ app.js<br>
-      ├─ manifest.json<br>
-      ├─ sw.js<br>
-      ├─ icon-192.png<br>
-      └─ icon-512.png
+  <div class="center">
+    <img src="image.png" alt="Anteprima del gioco">
+    <h1>🎬 La Linea — Gioco Tributo (B/N)</h1>
+    <div style="margin-top:16px">
+      <a href="index.html"><button>▶ PLAY</button></a>
     </div>
-
-    <h2>Installazione come PWA</h2>
-    <ol>
-      <li>Lascia <code>manifest.json</code> e <code>sw.js</code> nella root.</li>
-      <li>Pubblica su un hosting statico HTTPS (GitHub Pages/Netlify/etc.).</li>
-      <li>Dal telefono: “<em>Aggiungi alla schermata Home</em>”.</li>
-    </ol>
-
-    <h2>Icone</h2>
-    <ul>
-      <li><code>icon-192.png</code> — 192×192 px</li>
-      <li><code>icon-512.png</code> — 512×512 px</li>
-    </ul>
-
-    <h2>Note tecniche</h2>
-    <ul>
-      <li>Generatori di ostacoli: <em>step</em>, <em>gap</em>, <em>bump</em>.</li>
-      <li>Collisione vs. forma locale della linea; cadere in un <em>gap</em> chiude la partita.</li>
-      <li>Difficoltà crescente con la velocità.</li>
-    </ul>
-
-    <h2>Personalizzazioni rapide</h2>
-    <ul>
-      <li>In <code>app.js</code>, modifica <code>speed</code> (velocità iniziale) e la frequenza di spawn (<code>t % 70</code>).</li>
-      <li>Ritocca lo stile del personaggio nella funzione <code>guy.draw()</code>.</li>
-    </ul>
-
-    <h2>Deploy</h2>
-    <p><strong>GitHub Pages</strong>: repo → carica i file in <code>main</code> → <em>Settings → Pages</em> → <em>Deploy from branch</em>.</p>
-    <p><strong>Server</strong>: copia la cartella su hosting HTTPS. Nessun build step.</p>
-
-    <hr>
-    <p class="footer">Codice con licenza MIT. Nomi e marchi appartengono ai rispettivi titolari. © 2025 pezzaliAPP</p>
   </div>
+
+  <h2>✨ Caratteristiche</h2>
+  <ul>
+    <li>Stile minimalista in bianco/nero</li>
+    <li>Personaggio animato (bocca, braccia)</li>
+    <li>Bonus in aria, ponti disegnati dalla mano</li>
+    <li>Ostacoli: fiumi, piante, lupi da evitare</li>
+    <li>3 vite, livelli progressivi e difficoltà crescente</li>
+    <li>Funziona su laptop, tablet e smartphone</li>
+    <li>Installabile offline come PWA</li>
+  </ul>
+
+  <h2>🎮 Comandi (IT)</h2>
+  <p><strong>Laptop / PC (tastiera)</strong></p>
+  <ul>
+    <li><kbd>←</kbd> / <kbd>→</kbd> → muovi a sinistra / destra</li>
+    <li><kbd>Space</kbd> → salta</li>
+    <li><kbd>↓</kbd> → fermati</li>
+    <li><kbd>P</kbd> → pausa / riprendi</li>
+    <li><kbd>R</kbd> → restart</li>
+  </ul>
+  <p><strong>Smartphone / Tablet (touch / pulsanti virtuali)</strong></p>
+  <ul>
+    <li>Tocca il canvas o il pulsante “SALTA” per saltare</li>
+    <li>Usa i pulsanti <strong>←</strong> e <strong>→</strong> sullo schermo per muoverti</li>
+    <li>I pulsanti virtuali appaiono automaticamente su dispositivo touch</li>
+    <li>La scritta “spazio” è visibile solo su desktop (nascosta su mobile)</li>
+  </ul>
+
+  <h2>🎮 Controls (EN)</h2>
+  <p><strong>Laptop / PC (keyboard)</strong></p>
+  <ul>
+    <li><kbd>←</kbd> / <kbd>→</kbd> → move left / right</li>
+    <li><kbd>Space</kbd> → jump</li>
+    <li><kbd>↓</kbd> → stop</li>
+    <li><kbd>P</kbd> → pause / resume</li>
+    <li><kbd>R</kbd> → restart</li>
+  </ul>
+  <p><strong>Smartphone / Tablet (touch / on-screen buttons)</strong></p>
+  <ul>
+    <li>Tap the canvas or the “JUMP” button to jump</li>
+    <li>Use the on-screen <strong>←</strong> and <strong>→</strong> buttons to move</li>
+    <li>Virtual buttons appear automatically on mobile devices</li>
+    <li>The “space” label is shown only on desktop (hidden on mobile)</li>
+  </ul>
+
+  <h2>📱 Installazione</h2>
+  <ol>
+    <li>Apri il link del gioco nel browser.</li>
+    <li>Aggiungilo alla Home / Installa come app.</li>
+    <li>Gioca offline, full-screen.</li>
+  </ol>
+
+  <p style="margin-top:30px;color:#888">
+    © 2025 — <a href="https://www.alessandropezzali.it">pezzaliAPP</a> — MIT License
+  </p>
 </body>
 </html>
