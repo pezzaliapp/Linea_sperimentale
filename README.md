@@ -1,65 +1,29 @@
-# 🖋️ La Linea — Gioco Tributo (B/N)
+# 🎬 La Linea — Gioco Tributo (B/N)
 
-<p align="center">
-  <img src="icon-192.png" width="96" alt="La Linea Icona">  
-</p>
+Omaggio stilistico all’idea di **Osvaldo Cavandoli**.  
+Un fan-game didattico, gratuito e open source, sviluppato come **Progressive Web App** (PWA).  
 
-**© 2025 pezzaliAPP — MIT**
+![Anteprima](image.png)
 
-Omaggio stilistico all’idea originale di *Osvaldo Cavandoli*.  
-Un fan-game didattico in bianco e nero, pensato per browser e installabile come **PWA**.
+👉 [Gioca subito](https://www.alessandropezzali.it/Linea_sperimentale/)  
 
 ---
 
-## 🎮 Caratteristiche
-
-- Omino su linea continua, con salti prolungabili.
-- **Gap e fiumi** superabili col salto o con i **ponti temporanei** disegnati dalla mano.
-- **Piante e lupi** da evitare, pena la perdita di una vita.
-- **Bonus in aria** (+10/+50/+100).
-- **3 vite disponibili**, restart round finché ci sono cuori.
-- **Livelli a cicli** (~30s) con difficoltà crescente.
-- HUD con punteggio, vite, livello e effetto pellicola.
-- Input tastiera, touch e pulsanti mobili.
-- PWA offline-ready.
+### ✨ Caratteristiche
+- Stile minimalista in bianco/nero
+- Personaggio animato (bocca e braccia)
+- Bonus e ponti disegnati dalla “mano”
+- Livelli progressivi con ostacoli dinamici (fiumi, piante, lupi)
+- Funziona su **laptop, tablet e smartphone**  
+- **Installabile offline** grazie a Service Worker e Manifest
 
 ---
 
-## ⌨️ Controlli
-
-**PC / Laptop**
-- `Space` → Salta  
-- `←` `→` → Muovi  
-- `↓` → Ferma  
-- `P` → Pausa  
-- `R` → Restart  
-
-**Smartphone / Tablet**
-- Tocca il canvas per saltare.  
-- Barra di controllo (← **SALTA** →).
+### 📱 Installazione come App
+1. Apri il link nel browser (Chrome, Safari, Edge).
+2. Aggiungi alla schermata Home / Installa come app.
+3. Gioca anche offline, senza bisogno di rete.
 
 ---
 
-## 📦 Struttura
-
-📂 Contenuto del progetto:
-
-- ![icon](icon-192.png) `index.html` → Pagina principale  
-- ![icon](icon-192.png) `app.js` → Motore del gioco  
-- ![icon](icon-192.png) `manifest.json` → Dati PWA  
-- ![icon](icon-192.png) `sw.js` → Service Worker  
-- ![icon](icon-192.png) `README.md` / `readme.html` → Documentazione  
-
----
-
-## 📲 Installazione come App
-
-1. Apri [La Linea — Tributo](https://www.alessandropezzali.it/Linea_sperimentale/).  
-2. Aggiungilo alla **Home** dal browser.  
-3. Avvia a schermo intero, anche offline.  
-
----
-
-## 📜 Licenza
-
-MIT License — uso didattico, non ufficiale.
+© 2025 — [pezzaliAPP](https://www.alessandropezzali.it) — MIT License
