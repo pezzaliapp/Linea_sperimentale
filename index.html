@@ -13,13 +13,24 @@
     header{padding:10px 14px;border-bottom:1px solid #222;display:flex;gap:10px;align-items:center}
     header h1{margin:0;font-size:16px;font-weight:600;letter-spacing:.3px}
     header .btn{margin-left:auto;border:1px solid var(--fg);background:transparent;color:var(--fg);padding:6px 10px;border-radius:8px;cursor:pointer}
+
     #wrap{display:flex;flex-direction:column;align-items:center;gap:10px;padding:10px}
-    canvas{width:min(100vw,900px);aspect-ratio:3/2;background:#000;display:block;border:2px solid var(--fg);border-radius:12px}
-    #hud{width:min(100vw,900px);display:flex;justify-content:space-between;align-items:center;color:var(--muted)}
-    #hud .pill{border:1px solid #333;border-radius:999px;padding:4px 10px}
-    #touch{width:min(100vw,900px);height:90px;border:1px dashed #333;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#777}
+
+    /* Canvas: proporzioni aggiornate a 900x420 */
+    canvas{
+      width:min(100vw,900px);
+      aspect-ratio:900/420;
+      background:#000;display:block;
+      border:2px solid #1c1c1c;     /* leggermente più soft */
+      border-radius:12px
+    }
+
+    #hud{width:min(100vw,900px);display:flex;justify-content:center;align-items:center;color:var(--muted)}
     .controls{display:flex;gap:8px}
     .controls button{border:1px solid var(--fg);background:transparent;color:var(--fg);padding:10px 12px;border-radius:10px;min-width:90px;font-weight:600}
+
+    #touch{width:min(100vw,900px);height:90px;border:1px dashed #333;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#777;text-align:center}
+
     a,button{cursor:pointer}
     @media (hover:none){ header .kbd{display:none} }
     .kbd{font-family:ui-monospace,Menlo,Consolas,monospace;border:1px solid #333;border-radius:6px;padding:2px 6px;color:#aaa}
@@ -32,19 +43,22 @@
   </header>
 
   <div id="wrap">
-    <canvas id="game" width="900" height="600" aria-label="Gioco La Linea"></canvas>
+    <!-- Canvas allineato ad app.js v9 -->
+    <canvas id="game" width="900" height="420" aria-label="Gioco La Linea"></canvas>
 
+    <!-- Solo i pulsanti: HUD (punteggio, vite, livello, ponti) è disegnato nel canvas -->
     <div id="hud">
-  <div class="controls">
-    <button id="btnJump" aria-label="Salta">Salta</button>
-    <button id="btnRestart" aria-label="Ricomincia">Restart</button>
-  </div>
+      <div class="controls">
+        <button id="btnJump" aria-label="Salta">Salta</button>
+        <button id="btnRestart" aria-label="Ricomincia">Restart</button>
+      </div>
     </div>
 
+    <!-- Hint pulito (su dispositivi touch la classe .kbd viene nascosta) -->
     <div id="touch">Tocca qui o premi <span class="kbd">spazio</span> per far saltare la Linea</div>
 
     <p style="color:#666;max-width:900px;text-align:center;margin:6px 0 16px">
-      Omaggio stilistico all’idea di Osvaldo Cavandoli. Questo è un fan-game didattico, non ufficiale.
+      Omaggio stilistico all’idea di Osvaldo Cavandoli. Fan-game didattico, non ufficiale.
     </p>
   </div>
 
