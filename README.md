@@ -1,28 +1,39 @@
 # 🎬 La Linea — Gioco Tributo (B/N)
 
 Omaggio stilistico all’idea di **Osvaldo Cavandoli**.  
-Un fan-game didattico, gratuito e open source, sviluppato come **Progressive Web App** (PWA).  
+Un fan-game didattico, gratuito e open source, sviluppato come **Progressive Web App** (PWA).
 
 ![Anteprima](image.png)
 
-👉 [Gioca subito](https://www.alessandropezzali.it/Linea_sperimentale/)  
+👉 [Gioca subito](https://www.alessandropezzali.it/Linea_sperimentale/)
 
 ---
 
 ### ✨ Caratteristiche
-- Stile minimalista in bianco/nero
-- Personaggio animato (bocca e braccia)
-- Bonus e ponti disegnati dalla “mano”
-- Livelli progressivi con ostacoli dinamici (fiumi, piante, lupi)
-- Funziona su **laptop, tablet e smartphone**  
-- **Installabile offline** grazie a Service Worker e Manifest
+
+- Stile minimalista in bianco/nero  
+- Personaggio animato (bocca, braccia)  
+- Bonus in aria, ponti disegnati dalla mano, fiumi, piante, lupi  
+- 3 vite, livelli progressivi e difficoltà crescente  
+- Input da tastiera, touch e pulsanti mobili  
+- Installabile offline
 
 ---
 
-### 📱 Installazione come App
-1. Apri il link nel browser (Chrome, Safari, Edge).
-2. Aggiungi alla schermata Home / Installa come app.
-3. Gioca anche offline, senza bisogno di rete.
+### 🎮 Comandi di gioco
+
+**Laptop / PC (tastiera):**  
+- `←` / `→` → muovi a sinistra / destra  
+- `Space` → salta  
+- `↓` → fermati  
+- `P` → pausa / riprendi  
+- `R` → restart
+
+**Smartphone / Tablet (touch / pulsanti virtuali):**  
+- Tocca il canvas o il pulsante “SALTA” per saltare  
+- Usa i pulsanti **←** e **→** sullo schermo per muoverti  
+- In modalità mobile, i pulsanti virtuali appaiono automaticamente  
+- Su dispositivi touch la scritta “spazio” è solo come suggerimento (classe `.kbd` nascosta)
 
 ---
 
