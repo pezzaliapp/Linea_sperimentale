@@ -1,10 +1,11 @@
-/* La Linea — Inline Character v7 (bonus fix)
+/* La Linea — Inline Character v8 (mobile controls)
    - Gap superabili col salto (linea continua in aria)
    - Game Over solo a terra su gap reale non pontato
    - Mano che disegna ponti (TTL) con inchiostro limitato + ricarica automatica
    - Bonus in aria (+10/+50/+100) con hitbox ellittica migliorata
    - Profilo umanizzato + bocca animata, braccia alzate su bonus
    - Effetto pellicola (flicker/grana), HUD, pausa, restart, input tastiera + touch
+   - NEW: barra comandi visibile su mobile (← SALTA →)
    MIT 2025 pezzaliAPP
 */
 (() => {
@@ -47,7 +48,7 @@
   const GUY_MIN_X = 40;
   const GUY_MAX_X = W - 40;
 
-  // Salto
+  // Salto (prolungabile)
   const GRAV = 0.8, JUMP_V0 = -16, HOLD_ACC = 0.5, HOLD_TCK = 14;
   let inputHeldJump = false, holdTicks = 0, jumpVy = 0, jumpOffset = 0; // <0 = in aria
 
@@ -497,11 +498,65 @@
     ['touchend','touchcancel'].forEach(ev=> touchArea.addEventListener(ev, ()=>{ pointerUp(); }, {passive:false}));
   }
 
-  // Bottoni opz.
+  // Bottoni opzionali UI già esistenti
   document.getElementById('btnJump')?.addEventListener('pointerdown', pressDownJump);
   document.getElementById('btnJump')?.addEventListener('pointerup',   releaseJump);
   document.getElementById('btnRestart')?.addEventListener('click', restart);
   document.getElementById('btnPause')?.addEventListener('click', togglePause);
+
+  // === Controlli touch visibili (iOS/Android) ===============================
+  function createTouchControls(){
+    if (document.getElementById('ctlBar')) return; // già creati
+
+    const bar = document.createElement('div');
+    bar.id = 'ctlBar';
+    bar.innerHTML = `
+      <style>
+        #ctlBar{
+          position: fixed; inset:auto 0 12px 0; display:flex; gap:12px;
+          justify-content:center; align-items:center; z-index:9999;
+          pointer-events:auto; user-select:none;
+        }
+        #ctlBar .btn{
+          font: 20px ui-monospace, Menlo, Consolas, monospace;
+          color:#000; background:#fff; border:none; border-radius:14px;
+          padding:14px 18px; min-width:72px;
+          box-shadow:0 6px 18px rgba(255,255,255,.18);
+          touch-action:none;
+        }
+        #ctlBar .btn:active{ transform:translateY(1px); }
+        @media (min-width: 800px){ #ctlBar{ display:none; } } /* desktop: nascosti */
+      </style>
+      <button class="btn" id="btnLeft">←</button>
+      <button class="btn" id="btnJumpBig">SALTA</button>
+      <button class="btn" id="btnRight">→</button>
+    `;
+    document.body.appendChild(bar);
+
+    const left  = document.getElementById('btnLeft');
+    const right = document.getElementById('btnRight');
+    const jump  = document.getElementById('btnJumpBig');
+
+    const down = (el, fn)=>{ ['pointerdown','touchstart','mousedown'].forEach(e=>el.addEventListener(e, fn, {passive:false})); };
+    const upA  = (el, fn)=>{ ['pointerup','pointercancel','pointerleave','touchend','touchcancel','mouseup'].forEach(e=>el.addEventListener(e, fn, {passive:false})); };
+
+    down(left,  e=>{ e.preventDefault(); moveLeft  = true;  holdStill=false; });
+    upA (left,  e=>{ e.preventDefault(); moveLeft  = false; });
+
+    down(right, e=>{ e.preventDefault(); moveRight = true;  holdStill=false; });
+    upA (right, e=>{ e.preventDefault(); moveRight = false; });
+
+    down(jump,  e=>{ e.preventDefault(); pressDownJump(); });
+    upA (jump,  e=>{ e.preventDefault(); releaseJump(); });
+  }
+
+  if ('ontouchstart' in window) {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', createTouchControls);
+    } else {
+      createTouchControls();
+    }
+  }
 
   // Start
   requestAnimationFrame(tick);
