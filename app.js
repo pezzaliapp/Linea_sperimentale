@@ -1,10 +1,10 @@
-/* La Linea — Inline Character v5 (full)
+/* La Linea — Inline Character v6 (full + bonus + flicker)
    - Gap superabili col salto (linea continua in aria)
    - Game Over solo a terra su gap reale non pontato
-   - Gap limitati
-   - Mano che disegna ponti (TTL) con inchiostro limitato + click sonoro
+   - Mano che disegna ponti (TTL) con inchiostro limitato + ricarica automatica
+   - Bonus in aria (+10/+50/+100) con animazione braccia
    - Profilo umanizzato + bocca animata
-   - HUD, pausa, restart, input tastiera + touch
+   - Effetto pellicola (flicker/grana), HUD, pausa, restart, input tastiera + touch
    MIT 2025 pezzaliAPP
 */
 (() => {
@@ -28,9 +28,11 @@
   let bridges = [];                 // [{x,w,ttl}]
   const BRIDGE_TTL = 120;           // ~2s @60fps
 
-  // Inchiostro (quanti ponti disponibili per partita)
+  // Inchiostro (ponti) + ricarica
   let inkMax = 3;
   let ink = inkMax;
+  const INK_RECHARGE_FRAMES = 1800; // ~30s a 60fps
+  let inkRechargeCounter = INK_RECHARGE_FRAMES;
 
   // Mano scenica/salvavita
   let hand = { x: W + 120, y: baseY0 - 160, show: false, timer: 0, drawing: false };
@@ -63,33 +65,36 @@
   let moveLeft=false, moveRight=false, holdStill=false;
   const MOVE_SPEED = 5;
 
-  // Bocca dinamica (0 chiusa .. 1 spalancata)
+  // Bocca dinamica (0 chiusa .. 1 spalancata) + braccia alzate su bonus
   let mouth = 0.25;
+  let armRaiseTimer = 0;
   const lerp = (a,b,k)=> a+(b-a)*k;
   function updateMouth(){
     let target = 0.25;
     if (holdStill && jumpOffset === 0) target = 0.1;         // fermo
     if (jumpOffset < 0 || jumpVy < -1) target = 0.65;        // in volo
+    if (armRaiseTimer > 0) target = 0.8;                     // bonus!
     if (jumpOffset === 0 && Math.abs(jumpVy) > 0 && t%6<3) target = 0.45; // atterra
     if (!running) target = 1.0;                              // game over
     mouth = lerp(mouth, target, 0.2);
     if (running && jumpOffset === 0 && (moveLeft || moveRight)) mouth += Math.sin(t*0.4)*0.03;
     mouth = Math.max(0, Math.min(1, mouth));
+    if (armRaiseTimer>0) armRaiseTimer--;
   }
 
-  // Audio click (WebAudio, nessun file esterno)
+  // Audio click (WebAudio)
   let audioCtx = null;
-  function clickSound(){
+  function clickSound(freq=1000, dur=0.06, gain=0.12){
     try{
       if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       const o = audioCtx.createOscillator();
       const g = audioCtx.createGain();
       o.type = 'square';
-      o.frequency.setValueAtTime(1000, audioCtx.currentTime);
-      g.gain.setValueAtTime(0.12, audioCtx.currentTime);
-      g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.06);
+      o.frequency.setValueAtTime(freq, audioCtx.currentTime);
+      g.gain.setValueAtTime(gain, audioCtx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + dur);
       o.connect(g).connect(audioCtx.destination);
-      o.start(); o.stop(audioCtx.currentTime + 0.06);
+      o.start(); o.stop(audioCtx.currentTime + dur);
     }catch(_){}
   }
 
@@ -130,7 +135,6 @@
 
   // Baseline con ponti + continuità in salto + safe start
   function baselineAt(x){
-    // se c'è un ponte, la linea è continua alla quota base
     for (const b of bridges){
       if (x >= b.x && x <= b.x + b.w) return baseY0;
     }
@@ -160,6 +164,53 @@
     ctx.stroke();
   }
 
+  // === Bonus in aria ========================================================
+  let bonuses = []; // {x,y,val,ttl}
+  function spawnBonus(){
+    // probabilità moderata, non subito
+    if (safeFrames>0) return;
+    if (Math.random() < 0.25){ // 25% quando chiamato
+      // valori con rarità
+      const r = Math.random();
+      let val = 10;
+      if (r > 0.85) val = 50;
+      if (r > 0.97) val = 100; // rarissimo
+      const y = baseY0 - (80 + Math.random()*120); // in aria
+      bonuses.push({ x: W + 20, y, val, ttl: 600 }); // ~10s max on-screen
+    }
+  }
+
+  function drawBonus(b){
+    // disegno semplice a losanga/cerchio per B/N
+    ctx.lineWidth = STROKE;
+    ctx.strokeStyle = FG;
+    ctx.beginPath();
+    ctx.arc(b.x, b.y, 10, 0, Math.PI*2);
+    ctx.stroke();
+    // valore piccolo sopra
+    ctx.font = '12px ui-monospace, Menlo, Consolas, monospace';
+    ctx.fillStyle = FG;
+    ctx.textAlign='center';
+    ctx.fillText('+'+b.val, b.x, b.y - 14);
+    ctx.textAlign='start';
+  }
+
+  function tryCollectBonus(){
+    // posizione "testa" approssimata
+    const headX = GUY_X;
+    const headY = (baselineAt(GUY_X - GUY_W/2) ?? baseY0 + baselineAt(GUY_X + GUY_W/2) ?? baseY0)/2 + jumpOffset - 100;
+    for (let i=bonuses.length-1;i>=0;i--){
+      const b = bonuses[i];
+      const dx = b.x - headX, dy = b.y - (headY);
+      if (dx*dx + dy*dy < 34*34){ // raggio ~34
+        score += b.val;
+        armRaiseTimer = 28;
+        clickSound(1400, 0.05, 0.10); // click acuto
+        bonuses.splice(i,1);
+      }
+    }
+  }
+
   // Disegno omino (profilo integrato)
   function strokeInlineMan(gx, lift, mouthOpen){
     const start = gx - GUY_W/2, end = gx + GUY_W/2;
@@ -186,17 +237,20 @@
     // naso
     ctx.quadraticCurveTo(gx + w*0.04, yTop - (h*0.95), gx - w*0.02, yTop - (h*0.93));
     ctx.quadraticCurveTo(gx + w*0.34, yTop - (h*0.90), gx + w*0.40, yTop - (h*0.84));
-    // braccio + dita
-    const armY = yTop - (h*0.70);
+
+    // braccio + dita (alzato su bonus)
+    const armRaise = armRaiseTimer>0 ? 26 : 0;
+    const armY = yTop - (h*0.70) - armRaise;
     ctx.lineTo(gx - w*0.02, armY);
-    ctx.lineTo(gx - w*0.02 + arm, armY - Math.sin(t*0.12)*8);
+    ctx.lineTo(gx - w*0.02 + arm, armY - Math.sin(t*0.12)*8 - armRaise*0.3);
     const hx = gx - w*0.02 + arm;
-    const hy = armY - Math.sin(t*0.12)*8;
+    const hy = armY - Math.sin(t*0.12)*8 - armRaise*0.3;
     ctx.moveTo(hx, hy); ctx.lineTo(hx + finger, hy - finger*0.35);
     ctx.moveTo(hx, hy); ctx.lineTo(hx + finger, hy + finger*0.05);
     ctx.moveTo(hx, hy); ctx.lineTo(hx + finger*0.75, hy + finger*0.45);
+
     // fianco dx + aggancio alla baseline destra
-    ctx.moveTo(gx - w*0.06, armY + 8);
+    ctx.moveTo(gx - w*0.06, armY + 8 + armRaise*0.2);
     ctx.lineTo(gx - w*0.06, yTop - (h*0.18));
     ctx.quadraticCurveTo(gx - w*0.06, yTop - (h*0.06), start + GUY_W - 8*s, yTop - (h*0.04));
     ctx.lineTo(start + GUY_W - 8*s, yR);
@@ -234,8 +288,28 @@
     hand.show = true; hand.drawing = true;
     hand.x = target.x + target.w + 10;
     hand.y = baseY0 - 90;
-    clickSound(); // feedback audio B/N
+    clickSound(1000, 0.06, 0.12); // click salvataggio
     return true;
+  }
+
+  // Effetto pellicola (flicker/grana B/N)
+  function filmFlicker(){
+    // leggero flicker globalmente
+    ctx.save();
+    ctx.globalAlpha = 0.04 + Math.random()*0.05;
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0,0,W,H);
+    ctx.restore();
+
+    // righette verticali random (graffi)
+    if (Math.random() < 0.12){
+      const x = (Math.random()*W)|0;
+      ctx.save();
+      ctx.globalAlpha = 0.08;
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(x, 0, 1, H);
+      ctx.restore();
+    }
   }
 
   // === LOOP =================================================================
@@ -244,17 +318,30 @@
       t++; score++;
       if (safeFrames > 0) safeFrames--;
 
-      // Spawn ostacoli solo dopo zona sicura
+      // Spawn ostacoli e bonus
       if (safeFrames <= 0 && t%75===0) spawnObstacle();
+      if (t%90===0) spawnBonus();
 
       // Scorrimento mondo
       obst.forEach(o => o.x -= speed);
       bridges.forEach(b => { b.x -= speed; b.ttl--; });
+      bonuses.forEach(b => { b.x -= speed; b.ttl--; });
       obst = obst.filter(o => o.x + o.w > -40);
       bridges = bridges.filter(b => (b.x + b.w > -40) && b.ttl > 0);
+      bonuses = bonuses.filter(b => b.x > -30 && b.ttl > 0);
 
       // Difficoltà progressiva
       if (t%600===0) speed += .25;
+
+      // Ricarica inchiostro
+      if (ink < inkMax){
+        if (--inkRechargeCounter <= 0){
+          ink = Math.min(inkMax, ink + 1);
+          inkRechargeCounter = INK_RECHARGE_FRAMES;
+        }
+      } else {
+        inkRechargeCounter = INK_RECHARGE_FRAMES;
+      }
 
       // Mano: prova a salvare quando ha inchiostro e c'è un gap vicino
       if (hand.timer-- <= 0){
@@ -280,6 +367,7 @@
 
       updateJump();
       updateMouth();
+      tryCollectBonus();
 
       // GAME OVER: solo se a terra dentro gap reale non pontato
       if (safeFrames <= 0){
@@ -296,6 +384,10 @@
 
     // DRAW
     ctx.clearRect(0,0,W,H);
+
+    // effetto pellicola
+    filmFlicker();
+
     // leggero bagliore base
     ctx.fillStyle = SHADOW;
     const yMid = baselineAt(Math.floor(W*.6)) ?? baseY0;
@@ -306,6 +398,9 @@
     strokeBaseline(0, Math.max(0, L));
     strokeInlineMan(GUY_X, jumpOffset, mouth);
     strokeBaseline(R, W);
+
+    // bonus
+    bonuses.forEach(drawBonus);
 
     // mano
     if (hand.show){
@@ -341,10 +436,10 @@
   function releaseJump(){ inputHeldJump = false; }
   function restart(){
     running=true; t=0; score=0; speed=4;
-    obst.length=0; bridges.length=0;
+    obst.length=0; bridges.length=0; bonuses.length=0;
     jumpVy=0; jumpOffset=0; holdTicks=0; inputHeldJump=false;
     mouth=0.25; safeFrames=120;
-    ink = inkMax;
+    ink = inkMax; inkRechargeCounter = INK_RECHARGE_FRAMES;
   }
   function togglePause(){
     running=!running;
@@ -404,7 +499,7 @@
     ['touchend','touchcancel'].forEach(ev=> touchArea.addEventListener(ev, ()=>{ pointerUp(); }, {passive:false}));
   }
 
-  // Bottoni UI (opzionali se presenti in pagina)
+  // Bottoni UI (se presenti)
   document.getElementById('btnJump')?.addEventListener('pointerdown', pressDownJump);
   document.getElementById('btnJump')?.addEventListener('pointerup',   releaseJump);
   document.getElementById('btnRestart')?.addEventListener('click', restart);
