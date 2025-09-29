@@ -1,4 +1,4 @@
-/* La Linea — Inline Character — smooth baseline + path isolation — MIT 2025 pezzaliAPP */
+/* La Linea — Inline Character v2 (profilo + bocca animata) — MIT 2025 pezzaliAPP */
 (() => {
   'use strict';
 
@@ -15,12 +15,11 @@
   let baseY0 = Math.round(H * 0.72);
   let speed = 4;
   let obst = [];
-  let particles = [];
   let hand = { x: W + 120, y: baseY0 - 160, show: false, timer: 0 };
 
   // Omino integrato (posizione mobile)
   let GUY_X = Math.round(W * 0.28);
-  const GUY_W = 96;
+  const GUY_W = 104;               // un filo più largo per proporzioni "umane"
   const STROKE = 8;
   const GUY_MIN_X = 40;
   const GUY_MAX_X = W - 40;
@@ -43,16 +42,35 @@
   let moveLeft=false, moveRight=false, holdStill=false;
   const MOVE_SPEED = 5;
 
+  // --- Stato espressivo: bocca (0 chiusa .. 1 spalancata) -------------------
+  let mouth = 0.25;     // valore attuale
+  function lerp(a,b,k){ return a + (b-a)*k; }
+  function updateMouth(){
+    // target in base alla situazione
+    let target = 0.25;                     // corsetta/idle
+    if (holdStill && jumpOffset === 0) target = 0.1;            // fermo → chiusa
+    if (jumpOffset < 0 || jumpVy < -1)    target = 0.65;        // in volo → aperta
+    if (jumpOffset === 0 && Math.abs(jumpVy) > 0 && t%6<3) target = 0.45; // atterra → mezzo
+    if (!running) target = 1.0;                                   // game over → spalancata
+
+    mouth = lerp(mouth, target, 0.2); // ammorbidisci
+    // piccolo parlottio “grammelot” quando si muove a terra
+    if (running && jumpOffset === 0 && (moveLeft || moveRight)) {
+      mouth += Math.sin(t*0.4)*0.03;
+    }
+    mouth = Math.max(0, Math.min(1, mouth));
+  }
+
   // Ostacoli
   function spawnObstacle(){
     const r=Math.random();
     if (r<0.55){
       const dir=Math.random()<0.5?-1:1;
       const step=35+Math.random()*28;
-      obst.push({type:'step', x:W+40, w:100, h:dir*step});
+      obst.push({type:'step', x:W+40, w:110, h:dir*step});
     } else if (r<0.9){
       const h=26+Math.random()*40;
-      obst.push({type:'bump', x:W+40, w:140, h});
+      obst.push({type:'bump', x:W+40, w:150, h});
     } else {
       const w=80+Math.random()*80;
       obst.push({type:'gap', x:W+40, w});
@@ -77,14 +95,12 @@
     return y;
   }
 
-  // === Rendering helpers ====================================================
-
-  // baseline in [x0,x1] con campionamento fine e spezzatura ai gap
+  // baseline helper
   function strokeBaseline(x0, x1, step=2){
     ctx.beginPath();
     ctx.lineWidth = STROKE;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
+    ctx.lineCap   = 'round';
+    ctx.lineJoin  = 'round';
     ctx.strokeStyle = FG;
 
     let penDown = false;
@@ -94,21 +110,21 @@
       if (!penDown){ ctx.moveTo(x, y); penDown = true; }
       else ctx.lineTo(x, y);
     }
-    // ultimo punto preciso a x1
     const y1 = baselineAt(x1);
     if (y1 != null) ctx.lineTo(x1, y1);
-
     ctx.stroke();
   }
 
-  // profilo dell’omino come path totalmente isolato (nessun “filo” possibile)
-  function strokeInlineMan(gx, lift){
+  // === Profilo “umano” stile Cavandoli — path isolato + bocca dinamica ======
+  function strokeInlineMan(gx, lift, mouthOpen){
     const start = gx - GUY_W/2, end = gx + GUY_W/2;
     const yL = baselineAt(start), yR = baselineAt(end);
     if (yL == null || yR == null){ running=false; return; }
 
-    const s=1, h=120*s, w=56*s, arm=46*s;
-    const x0 = gx - 10*s;
+    // proporzioni più umane
+    const s=1, h=126*s, w=60*s, arm=56*s, finger=18*s;
+    const belly = 16*s;           // “pancia” arcuata
+    const x0 = gx - 6*s;          // offset per modellare testa/naso
     const yTop = (yL + yR)/2 + lift;
 
     ctx.beginPath();
@@ -117,42 +133,60 @@
     ctx.lineJoin = 'round';
     ctx.strokeStyle = FG;
 
-    // collegamenti rigorosi ai bordi baseline
-    ctx.moveTo(start, yL);                      // attacco sinistro
-    ctx.lineTo(start, yTop-(h*.55));            // gamba
+    // piede a L (ancoraggio sinistro) + pancia arcuata
+    ctx.moveTo(start, yL);
+    ctx.lineTo(start, yTop - (h*0.52));                              // gamba sx
+    ctx.quadraticCurveTo(start + belly*0.2, yTop - (h*0.78),
+                         gx - w*0.25,     yTop - (h*0.85));          // salita morbida
+    // sommità testa (ovale allungato)
+    ctx.quadraticCurveTo(gx + w*0.20, yTop - (h*1.07),
+                         gx + w*0.08,  yTop - (h*0.99));
 
-    // testa
-    ctx.quadraticCurveTo(start, yTop-(h*.80), x0+(w*.05), yTop-(h*.90));
-    ctx.quadraticCurveTo(x0+(w*.45), yTop-(h*1.05), x0+(w*.35), yTop-(h*1.00));
+    // fronte → naso a becco (più pronunciato) → guancia
+    ctx.quadraticCurveTo(gx + w*0.04, yTop - (h*0.95),
+                         gx - w*0.02, yTop - (h*0.93));
+    ctx.quadraticCurveTo(gx + w*0.34, yTop - (h*0.90),   // punta becco
+                         gx + w*0.40, yTop - (h*0.84));
+    ctx.quadraticCurveTo(gx + w*0.16, yTop - (h*0.86),
+                         gx + w*0.04, yTop - (h*0.90));  // rientro guancia
 
-    // naso
-    ctx.quadraticCurveTo(x0+(w*.30), yTop-(h*.95), x0+(w*.22), yTop-(h*.93));
-    ctx.quadraticCurveTo(x0+(w*.42), yTop-(h*.90), x0+(w*.46), yTop-(h*.84));
-    ctx.quadraticCurveTo(x0+(w*.28), yTop-(h*.86), x0+(w*.18), yTop-(h*.88));
+    // spalla/braccio dx (un po' più lungo)
+    const armY = yTop - (h*0.70);
+    ctx.lineTo(gx - w*0.02, armY);
+    ctx.lineTo(gx - w*0.02 + arm, armY - Math.sin(t*0.12)*8);       // micro-gesto
 
-    // braccio
-    const armY = yTop-(h*.70);
-    ctx.lineTo(x0+(w*.05), armY);
-    ctx.lineTo(x0+(w*.05)+arm, armY);
+    // dita (3 tratti corti)
+    const hx = gx - w*0.02 + arm;
+    const hy = armY - Math.sin(t*0.12)*8;
+    ctx.moveTo(hx, hy); ctx.lineTo(hx + finger, hy - finger*0.35);
+    ctx.moveTo(hx, hy); ctx.lineTo(hx + finger, hy + finger*0.05);
+    ctx.moveTo(hx, hy); ctx.lineTo(hx + finger*0.75, hy + finger*0.45);
 
-    // rientro e attacco destro
-    ctx.moveTo(x0+(w*.02), armY+6);
-    ctx.lineTo(x0+(w*.02), yTop-(h*.20));
-    ctx.quadraticCurveTo(x0+(w*.02), yTop-(h*.08), end-8*s, yTop-(h*.06));
-    ctx.lineTo(end-8*s, yR);                    // attacco destro esatto
-
+    // fianco destro e rientro alla baseline destra
+    ctx.moveTo(gx - w*0.06, armY + 8);
+    ctx.lineTo(gx - w*0.06, yTop - (h*0.18));
+    ctx.quadraticCurveTo(gx - w*0.06, yTop - (h*0.06),
+                         end - 8*s,   yTop - (h*0.04));
+    ctx.lineTo(end - 8*s, yR);
     ctx.stroke();
 
-    // bocca: micro-path separato (evita fili)
+    // — Bocca dinamica (path separato) —
+    // mouthOpen: 0..1 → distanza tra “labbro” superiore/inferiore (stile fessura)
+    const gap = 2 + mouthOpen * 8; // apertura in px
+    const mx1 = gx - w*0.02, my = yTop - (h*0.865);
     ctx.beginPath();
-    ctx.moveTo(x0+(w*.10), yTop-(h*.86));
-    ctx.lineTo(x0+(w*.26), yTop-(h*.84));
+    // labbro superiore
+    ctx.moveTo(mx1 - 12, my - gap*0.5);
+    ctx.lineTo(mx1 + 12, my - gap*0.5);
+    // labbro inferiore
+    ctx.moveTo(mx1 - 10, my + gap*0.5);
+    ctx.lineTo(mx1 + 10, my + gap*0.5);
     ctx.lineWidth = STROKE;
     ctx.strokeStyle = FG;
     ctx.stroke();
   }
 
-  // === Loop di gioco ========================================================
+  // === Loop =================================================================
   function tick(){
     if (running){
       t++; score++;
@@ -173,23 +207,16 @@
 
       if (!holdStill){
         const dir = (moveRight?1:0) - (moveLeft?1:0);
-        GUY_X = Math.max(GUY_MIN_X, Math.min(GUY_MAX_X, GUY_X + dir*5));
+        GUY_X = Math.max(GUY_MIN_X, Math.min(GUY_MAX_X, GUY_X + dir*MOVE_SPEED));
       }
 
       updateJump();
+      updateMouth();
 
       // se un gap attraversa la porzione dell’omino → game over
       for (let x=GUY_X-GUY_W/2+2; x<=GUY_X+GUY_W/2-2; x+=2){
         if (baselineAt(x) == null){ running = false; break; }
       }
-
-      // polvere
-      if (t%2===0) particles.push({
-        x: GUY_X-20+Math.random()*8,
-        y: (baselineAt(GUY_X) ?? baseY0)-2+Math.random()*4,
-        a: .5
-      });
-      particles = particles.filter(p => (p.a -= .02) > 0);
     }
 
     // DRAW
@@ -198,11 +225,11 @@
     const yMid = baselineAt(Math.floor(W*.6)) ?? baseY0;
     ctx.fillRect(0, yMid-3, W, 6);
 
-    // baseline sinistra, omino, baseline destra — ognuno in PATH dedicato
+    // baseline e omino (path separati → nessuna “linea appesa”)
     const L = GUY_X - GUY_W/2, R = GUY_X + GUY_W/2;
-    strokeBaseline(0, Math.max(0, L));        // 1) fino a prima dell’omino
-    strokeInlineMan(GUY_X, jumpOffset);       // 2) profilo integrato
-    strokeBaseline(R, W);                     // 3) dopo l’omino
+    strokeBaseline(0, Math.max(0, L));
+    strokeInlineMan(GUY_X, jumpOffset, mouth);
+    strokeBaseline(R, W);
 
     // mano scenica
     if (hand.show){
@@ -233,8 +260,9 @@
   function releaseJump(){ inputHeldJump = false; }
   function restart(){
     running=true; t=0; score=0; speed=4;
-    obst.length=0; particles.length=0;
+    obst.length=0;
     jumpVy=0; jumpOffset=0; holdTicks=0; inputHeldJump=false;
+    mouth = 0.25;
   }
   function togglePause(){
     running=!running;
@@ -280,7 +308,6 @@
     touchArea.addEventListener('pointerdown', pointerDown);
     ['pointerup','pointercancel','pointerleave'].forEach(ev=>touchArea.addEventListener(ev, pointerUp));
   }
-  // fallback iOS
   if ('ontouchstart' in window){
     touchArea.addEventListener('touchstart', e=>{
       const t=e.changedTouches[0];
