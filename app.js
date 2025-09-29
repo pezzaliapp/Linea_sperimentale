@@ -1,8 +1,8 @@
-/* La Linea — Inline Character v3
+/* La Linea — Inline Character v4
    - Gap superabili con salto
-   - Gap limitati
-   - Mano che disegna ponti temporanei
+   - Baseline continua sotto i piedi in aria
    - Profilo umanizzato + bocca animata
+   - Mano che disegna ponti temporanei
    MIT 2025 pezzaliAPP
 */
 (() => {
@@ -22,26 +22,26 @@
   let speed = 4;
 
   // Ostacoli & “ponti”
-  let obst = [];                    // step/bump/gap
-  let bridges = [];                 // ponti temporanei {x,w,ttl}
-  const BRIDGE_TTL = 120;           // ~2s @ 60fps
+  let obst = [];
+  let bridges = [];
+  const BRIDGE_TTL = 120;
 
-  // Mano scenica (può disegnare un ponte)
+  // Mano
   let hand = { x: W + 120, y: baseY0 - 160, show: false, timer: 0, drawing: false };
 
-  // 🔒 Zona sicura iniziale
-  let safeFrames = 120;             // ~2s: niente spawn gap, no game over su gap
+  // Zona sicura iniziale
+  let safeFrames = 120;
 
-  // Omino integrato (mobile)
+  // Omino
   let GUY_X = Math.round(W * 0.28);
   const GUY_W = 104;
   const STROKE = 8;
   const GUY_MIN_X = 40;
   const GUY_MAX_X = W - 40;
 
-  // Salto (deformazione locale)
+  // Salto
   const GRAV = 0.8, JUMP_V0 = -16, HOLD_ACC = 0.5, HOLD_TCK = 14;
-  let inputHeldJump = false, holdTicks = 0, jumpVy = 0, jumpOffset = 0; // jumpOffset<0 = in aria
+  let inputHeldJump = false, holdTicks = 0, jumpVy = 0, jumpOffset = 0;
 
   function startJump(){ if (!running) return; if (jumpOffset === 0){ jumpVy = JUMP_V0; holdTicks = HOLD_TCK; } }
   function updateJump(){
@@ -53,11 +53,11 @@
     }
   }
 
-  // Movimento orizzontale
+  // Movimento
   let moveLeft=false, moveRight=false, holdStill=false;
   const MOVE_SPEED = 5;
 
-  // Bocca dinamica (0 chiusa .. 1 spalancata)
+  // Bocca
   let mouth = 0.25;
   const lerp = (a,b,k)=> a+(b-a)*k;
   function updateMouth(){
@@ -71,8 +71,7 @@
     mouth = Math.max(0, Math.min(1, mouth));
   }
 
-  // === Ostacoli =============================================================
-
+  // Ostacoli
   function spawnObstacle(){
     const r=Math.random();
     if (r<0.55){
@@ -83,13 +82,12 @@
       const h=26+Math.random()*40;
       obst.push({type:'bump', x:W+40, w:150, h});
     } else {
-      // GAP con larghezza limitata ⇒ superabile col salto prolungato
-      const w=70+Math.random()*50; // max ≈ 120px
+      const w=70+Math.random()*50; // max 120
       obst.push({type:'gap', x:W+40, w});
     }
   }
 
-  // Baseline “pura” (senza ponti)
+  // Baseline pura
   function baselineAtRaw(x){
     let y = baseY0;
     for (const o of obst){
@@ -107,18 +105,18 @@
     return y;
   }
 
-  // Baseline con ponti e “safe start”
+  // Baseline con ponti e salti
   function baselineAt(x){
-    // se c'è un ponte, la linea è continua alla quota base
     for (const b of bridges){
       if (x >= b.x && x <= b.x + b.w) return baseY0;
     }
-    const y = baselineAtRaw(x);
-    if (y == null && safeFrames > 0) return baseY0; // in avvio “pontiamo” virtualmente
+    let y = baselineAtRaw(x);
+    if (y == null && jumpOffset < 0) return baseY0;   // 🔧 linea continua durante salto
+    if (y == null && safeFrames > 0) return baseY0;
     return y;
   }
 
-  // === Rendering baseline (liscia, spezza solo ai gap veri) =================
+  // Disegno baseline
   function strokeBaseline(x0, x1, step=2){
     ctx.beginPath();
     ctx.lineWidth = STROKE;
@@ -138,15 +136,14 @@
     ctx.stroke();
   }
 
-  // === Profilo “umano” stile Cavandoli — path isolato + bocca dinamica =====
+  // Disegno omino
   function strokeInlineMan(gx, lift, mouthOpen){
     const start = gx - GUY_W/2, end = gx + GUY_W/2;
-    const yL = baselineAt(start), yR = baselineAt(end);
-    if (yL == null || yR == null){ running=false; return; }
+    const yL = baselineAt(start) ?? baseY0;
+    const yR = baselineAt(end)   ?? baseY0;
 
     const s=1, h=126*s, w=60*s, arm=56*s, finger=18*s;
     const belly = 16*s;
-    const x0 = gx - 6*s;
     const yTop = (yL + yR)/2 + lift;
 
     ctx.beginPath();
@@ -155,34 +152,27 @@
     ctx.lineJoin = 'round';
     ctx.strokeStyle = FG;
 
-    // piede + pancia
     ctx.moveTo(start, yL);
     ctx.lineTo(start, yTop - (h*0.52));
     ctx.quadraticCurveTo(start + belly*0.2, yTop - (h*0.78), gx - w*0.25, yTop - (h*0.85));
-    // sommità
     ctx.quadraticCurveTo(gx + w*0.20, yTop - (h*1.07), gx + w*0.08,  yTop - (h*0.99));
-    // naso
     ctx.quadraticCurveTo(gx + w*0.04, yTop - (h*0.95), gx - w*0.02, yTop - (h*0.93));
     ctx.quadraticCurveTo(gx + w*0.34, yTop - (h*0.90), gx + w*0.40, yTop - (h*0.84));
-    ctx.quadraticCurveTo(gx + w*0.16, yTop - (h*0.86), gx + w*0.04, yTop - (h*0.90));
-    // spalla/braccio
     const armY = yTop - (h*0.70);
     ctx.lineTo(gx - w*0.02, armY);
     ctx.lineTo(gx - w*0.02 + arm, armY - Math.sin(t*0.12)*8);
-    // dita
     const hx = gx - w*0.02 + arm;
     const hy = armY - Math.sin(t*0.12)*8;
     ctx.moveTo(hx, hy); ctx.lineTo(hx + finger, hy - finger*0.35);
     ctx.moveTo(hx, hy); ctx.lineTo(hx + finger, hy + finger*0.05);
     ctx.moveTo(hx, hy); ctx.lineTo(hx + finger*0.75, hy + finger*0.45);
-    // fianco dx + aggancio
     ctx.moveTo(gx - w*0.06, armY + 8);
     ctx.lineTo(gx - w*0.06, yTop - (h*0.18));
     ctx.quadraticCurveTo(gx - w*0.06, yTop - (h*0.06), start + GUY_W - 8*s, yTop - (h*0.04));
     ctx.lineTo(start + GUY_W - 8*s, yR);
     ctx.stroke();
 
-    // bocca (path separato)
+    // bocca
     const gap = 2 + mouthOpen * 8;
     const mx1 = gx - w*0.02, my = yTop - (h*0.865);
     ctx.beginPath();
@@ -195,127 +185,52 @@
     ctx.stroke();
   }
 
-  // === Mano che disegna un ponte ===========================================
-  // Cerca un gap vicino all’omino e crea un ponte (con TTL) sopra quel gap
-  function maybeBridgeNearbyGap(){
-    // cerca il gap più vicino davanti a GUY_X (entro 240px)
-    let target = null, bestDist = 99999;
-    for (const o of obst){
-      if (o.type !== 'gap') continue;
-      const dist = o.x - GUY_X;
-      if (dist >= -40 && dist < 240 && dist < bestDist){ target = o; bestDist = dist; }
-    }
-    if (!target) return false;
-
-    // crea ponte se non già presente
-    const already = bridges.some(b => !(b.x + b.w < target.x || b.x > target.x + target.w));
-    if (already) return false;
-
-    bridges.push({ x: target.x, w: target.w, ttl: BRIDGE_TTL });
-    // animazione mano in posizione ponte
-    hand.show = true; hand.drawing = true;
-    hand.x = target.x + target.w + 10;
-    hand.y = baseY0 - 90;
-    return true;
-  }
-
-  // === LOOP =================================================================
+  // LOOP
   function tick(){
     if (running){
       t++; score++;
       if (safeFrames > 0) safeFrames--;
 
-      // spawn ostacoli solo dopo zona sicura
       if (safeFrames <= 0 && t%75===0) spawnObstacle();
 
-      // scorrimento
       obst.forEach(o => o.x -= speed);
       bridges.forEach(b => { b.x -= speed; b.ttl--; });
       obst = obst.filter(o => o.x + o.w > -40);
       bridges = bridges.filter(b => (b.x + b.w > -40) && b.ttl > 0);
 
-      // difficoltà
       if (t%600===0) speed += .25;
-
-      // mano: a volte disegna un ponte vicino
-      if (hand.timer-- <= 0){
-        hand.show = Math.random() < .03;
-        hand.timer = 180 + (Math.random()*240|0);
-        if (hand.show){
-          if (!maybeBridgeNearbyGap()){
-            // se non c'era gap, mano scenica
-            hand.drawing = false;
-            hand.x = W-40; hand.y = baseY0 - (120 + Math.random()*80);
-          }
-        }
-      } else if (hand.show){
-        hand.x -= speed*.8;
-        if (hand.x < -40) { hand.show = false; hand.drawing = false; }
-      }
-
-      // movimento orizzontale
-      if (!holdStill){
-        const dir = (moveRight?1:0) - (moveLeft?1:0);
-        GUY_X = Math.max(GUY_MIN_X, Math.min(GUY_MAX_X, GUY_X + dir*MOVE_SPEED));
-      }
 
       updateJump();
       updateMouth();
 
-      // GAME OVER su gap: SOLO quando siamo A TERRA dentro un gap reale (no ponti)
+      // GAME OVER → solo se a terra in un gap reale
       if (safeFrames <= 0){
         const gs = GUY_X - GUY_W/2 + 2, ge = GUY_X + GUY_W/2 - 2;
         let onRealGap = false;
         for (let x = gs; x <= ge; x += 2){
-          const isGapRaw = (baselineAtRaw(x) == null);            // vero buco
+          const isGapRaw = (baselineAtRaw(x) == null);
           const isBridged = bridges.some(b => x >= b.x && x <= b.x + b.w);
           if (isGapRaw && !isBridged){ onRealGap = true; break; }
         }
-        if (onRealGap && jumpOffset === 0) running = false;       // a terra nel buco ⇒ KO
+        if (onRealGap && jumpOffset === 0) running = false;
       }
     }
 
-    // DRAW
+    // Draw
     ctx.clearRect(0,0,W,H);
     ctx.fillStyle = SHADOW;
     const yMid = baselineAt(Math.floor(W*.6)) ?? baseY0;
     ctx.fillRect(0, yMid-3, W, 6);
 
-    // baseline e omino
     const L = GUY_X - GUY_W/2, R = GUY_X + GUY_W/2;
     strokeBaseline(0, Math.max(0, L));
     strokeInlineMan(GUY_X, jumpOffset, mouth);
     strokeBaseline(R, W);
 
-    // mano
-    if (hand.show){
-      ctx.fillStyle = FG;
-      ctx.beginPath(); ctx.arc(hand.x, hand.y, 14, 0, Math.PI*2); ctx.fill();
-      ctx.fillRect(hand.x-2, hand.y, 4, 60);
-      if (hand.drawing){
-        // piccolo tratteggio sopra il ponte
-        ctx.fillRect(hand.x-8, baseY0-2, 16, 4);
-      }
-    }
-
-    // HUD
-    ctx.fillStyle = FG;
-    ctx.font = '20px ui-monospace, Menlo, Consolas, monospace';
-    ctx.fillText(`PUNTI ${score}`, 18, 30);
-
-    if (!running){
-      ctx.textAlign='center';
-      ctx.font='bold 44px ui-monospace, Menlo, Consolas, monospace';
-      ctx.fillText('GAME OVER', W/2, H/2-10);
-      ctx.font='20px ui-monospace, Menlo, Consolas, monospace';
-      ctx.fillText('Tocca/Space per ripartire', W/2, H/2+24);
-      ctx.textAlign='start';
-    }
-
     requestAnimationFrame(tick);
   }
 
-  // ===== Input ==============================================================
+  // Input
   function pressDownJump(){ inputHeldJump = true; if(!running) return restart(); startJump(); }
   function releaseJump(){ inputHeldJump = false; }
   function restart(){
@@ -324,69 +239,13 @@
     jumpVy=0; jumpOffset=0; holdTicks=0; inputHeldJump=false;
     mouth=0.25; safeFrames=120;
   }
-  function togglePause(){
-    running=!running;
-    const b=document.getElementById('btnPause');
-    if (b) b.textContent = running ? '⏸︎ Pausa' : '▶︎ Riprendi';
-  }
 
-  // Tastiera
   window.addEventListener('keydown', e=>{
     if(e.code==='Space'){ e.preventDefault(); pressDownJump(); }
-    if(e.code==='ArrowLeft')  moveLeft=true;
-    if(e.code==='ArrowRight') moveRight=true;
-    if(e.code==='ArrowDown')  holdStill=true;
-    if(e.code==='KeyR') restart();
-    if(e.code==='KeyP') togglePause();
   });
   window.addEventListener('keyup', e=>{
     if(e.code==='Space'){ e.preventDefault(); releaseJump(); }
-    if(e.code==='ArrowLeft')  moveLeft=false;
-    if(e.code==='ArrowRight') moveRight=false;
-    if(e.code==='ArrowDown')  holdStill=false;
   });
 
-  // Touch (3 zone: sinistra=←, centro=salto, destra=→) + fallback iOS
-  const touchArea = document.getElementById('touch') || cvs;
-  function localX(evt){
-    const r = touchArea.getBoundingClientRect();
-    const scaleX = cvs.width / r.width;
-    return (evt.clientX - r.left) * scaleX;
-  }
-  function zoneFor(x){ if(x < W/3) return 'left'; if(x > 2*W/3) return 'right'; return 'center'; }
-  function pointerDown(e){
-    const zone = zoneFor(localX(e));
-    if (e.isPrimary === false) holdStill = true;
-    if (zone==='left')  moveLeft=true;
-    if (zone==='right') moveRight=true;
-    if (zone==='center') pressDownJump();
-  }
-  function pointerUp(){ moveLeft=moveRight=holdStill=false; releaseJump(); }
-  if (window.PointerEvent){
-    touchArea.addEventListener('pointerdown', pointerDown);
-    ['pointerup','pointercancel','pointerleave'].forEach(ev=>touchArea.addEventListener(ev, pointerUp));
-  }
-  if ('ontouchstart' in window){
-    touchArea.addEventListener('touchstart', e=>{
-      const t=e.changedTouches[0];
-      const r=touchArea.getBoundingClientRect();
-      const x=(t.clientX-r.left)*(cvs.width/r.width);
-      const zone=zoneFor(x);
-      if (e.touches.length>1) holdStill=true;
-      if (zone==='left')  moveLeft=true;
-      if (zone==='right') moveRight=true;
-      if (zone==='center') pressDownJump();
-      e.preventDefault();
-    }, {passive:false});
-    ['touchend','touchcancel'].forEach(ev=> touchArea.addEventListener(ev, ()=>{ pointerUp(); }, {passive:false}));
-  }
-
-  // Bottoni UI
-  document.getElementById('btnJump')?.addEventListener('pointerdown', pressDownJump);
-  document.getElementById('btnJump')?.addEventListener('pointerup',   releaseJump);
-  document.getElementById('btnRestart')?.addEventListener('click', restart);
-  document.getElementById('btnPause')?.addEventListener('click', togglePause);
-
-  // Start
   requestAnimationFrame(tick);
 })();
