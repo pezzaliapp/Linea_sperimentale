@@ -22,18 +22,35 @@ Un fan-game didattico, gratuito e open source, sviluppato come **Progressive Web
 
 ### 🎮 Comandi di gioco
 
-**Laptop / PC (tastiera):**  
+**Laptop / PC (tastiera):**
 - `←` / `→` → muovi a sinistra / destra  
 - `Space` → salta  
 - `↓` → fermati  
 - `P` → pausa / riprendi  
-- `R` → restart
+- `R` → restart  
 
-**Smartphone / Tablet (touch / pulsanti virtuali):**  
+**Smartphone / Tablet (touch / pulsanti virtuali):**
 - Tocca il canvas o il pulsante “SALTA” per saltare  
 - Usa i pulsanti **←** e **→** sullo schermo per muoverti  
-- In modalità mobile, i pulsanti virtuali appaiono automaticamente  
-- Su dispositivi touch la scritta “spazio” è solo come suggerimento (classe `.kbd` nascosta)
+- Su dispositivi touch i pulsanti virtuali appaiono automaticamente  
+- La scritta “spazio” è visibile solo su desktop (classe `.kbd` nascosta su mobile)
+
+---
+
+### 🎮 Controls (EN)
+
+**Laptop / PC (keyboard):**
+- `←` / `→` → move left / right  
+- `Space` → jump  
+- `↓` → stop  
+- `P` → pause / resume  
+- `R` → restart  
+
+**Smartphone / Tablet (touch / on-screen buttons):**
+- Tap the canvas or the “JUMP” button to jump  
+- Use the on-screen **←** and **→** buttons to move  
+- On mobile, virtual buttons appear automatically  
+- The “space” label is shown only on desktop (hidden on mobile)
 
 ---
 
